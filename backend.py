@@ -65,8 +65,12 @@ def SyncFood():
     
     data = base64.b64decode(data).decode("utf-8")
     
+
+    
     try:
       hardcode = data.split("ÉtelekMennyiségÖsszeg")
+      name = hardcode[0]
+
       del hardcode[0]
       hardcode.append(hardcode[0].split("Megrendelés értéke:"))
       del hardcode[0]
@@ -94,6 +98,14 @@ def SyncFood():
       if not date=="" or not food=="":
         clean.append([date, food])
     
+    name = name.split("Étkező neve:")[1]
+    name = name.split("Intézmény:")[0]
+    print(name)
+    
+    for i in ["\n", "\t", "  ", "\r"]:
+      name = name.replace(i, "")
+
+    
     #check if it contains food for future dates
     usable = [False, 0]
     for i in clean:
@@ -115,6 +127,9 @@ def SyncFood():
           
           response = model.generate_content(f"Csak az étel kategóriája és a neve legyen feltüntetve az alábbi szövegrészletből. Ne írj ki semmi mást. {clean[i][1]}")
           clean[i].append(response.text)
+
+          clean[i].append(name)
+
           print(response.text)
           
           bigdata.append(clean[i])
@@ -123,11 +138,26 @@ def SyncFood():
       #if its not usable, then the following emails will be useless as well
       break
     
-  
+  users = ReadUsers()
+  for i in users.values():
+    os.remove(f"data/{i}/bigdata.txt")
+    
+
+  for i in bigdata:
+    print(i)
+    try:
+      with open(f"data/{i[3]}/bigdata.txt", "a+", encoding="utf-8") as f:
+        del i[3]
+        f.write("\t".join(i)+"%%%")
+    except:
+      pass
+
+
+  """
   with open(os.getcwd()+"/data/bigdata.txt", "w+", encoding="utf-8") as file:
       for i in bigdata:
         file.write("\t".join(i)+"%%%")
-
+  """
   joined = []
   print(bigdata)
   for i in bigdata:
@@ -140,14 +170,17 @@ def SyncFood():
       return "----------------".join(i)
   """
 
-def GetFood(user="Bartha Vince Döme", date=None):
+def GetFood(user, date=None):
   if date == None:
     date = datetime.now().date()
   else:
     date = datetime.strptime(date, '%Y.%m.%d').date()
 
   bigdata = []
-  with open(os.getcwd()+"/data/bigdata.txt", "r", encoding="utf-8") as f:
+
+  user = GetUser(user)
+
+  with open(f"data/{user}/bigdata.txt", "r", encoding="utf-8") as f:
     fR = f.read().rstrip()
     if not fR == "":
       temp = fR.split("%%%")
@@ -171,7 +204,7 @@ def GetFood(user="Bartha Vince Döme", date=None):
       del bigdata[0]
 
   
-  with open(os.getcwd()+"/data/bigdata.txt", "w+", encoding="utf-8") as file:
+  with open(f"data/{user}/bigdata.txt", "w+", encoding="utf-8") as file:
       for i in bigdata:
         file.write("\t".join(i)+"%%%")
 
@@ -200,4 +233,39 @@ def GetFood(user="Bartha Vince Döme", date=None):
   
   return final
 
+def ReadUsers():
+  users = {}
+  try:
+    with open("data/users.txt", "r", encoding="utf-8") as f:
+      for i in f.read().split("\n"):
+        i = i.split("\t")
+        users.update({int(i[0]):i[1]})
+  except:
+    pass
+  return users
 
+def WriteUsers(users):
+  with open("data/users.txt", "w+", encoding="utf-8") as f:
+    for i in users.items():
+      print(i)
+      f.write(str(i[0])+"\t"+i[1])
+      
+def AddUser(id, user):
+  users = ReadUsers()
+
+  if id not in users:
+    users.update({id:user})
+    WriteUsers(users)
+    os.mkdir(f"data/{user}")
+    for i in {"remind", "order"}:
+      with open(f"data/{user}/{i}.txt", "a+") as f:
+        f.write("2025.01.01")
+        pass
+
+    return True
+  else:
+    return False
+
+def GetUser(id):
+  users = ReadUsers()
+  return users[id]

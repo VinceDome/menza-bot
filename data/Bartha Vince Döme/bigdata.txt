@@ -1,6 +1,4 @@
-2025.03.10	Street foodEbédCsevapcsicsa - street food1,3,6, 11 700 	Street food
-Csevapcsicsa
-%%%2025.03.11	Street foodEbédSloppy joe1,3,4,6,7,9,10,11,12, Coleslaw saláta3,7,10,12, 11 700 	Street food
+2025.03.11	Street foodEbédSloppy joe1,3,4,6,7,9,10,11,12, Coleslaw saláta3,7,10,12, 11 700 	Street food
 Sloppy joe
 Coleslaw saláta
 %%%2025.03.12	Street foodEbédQuesadilla - street food1,6,7,9,12, 11 700 	Street food
@@ -10,4 +8,5 @@ Quesadilla
 %%%2025.03.14	Első fogás 1.EbédOlasz paradicsom  leves1,12, 10 	Első fogás
 Olasz paradicsom leves
 %%%2025.03.14	Főétel 1.EbédGrillezett halfilé citromos vajjal1,4,7, Jázmin rizs, 12 090 	Főétel: Grillezett halfilé citromos vajjal
+Köret: Jázmin rizs
 %%%
