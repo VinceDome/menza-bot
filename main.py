@@ -2,7 +2,7 @@ import os, discord, time, random, asyncio, math
 from datetime import datetime, timedelta
 from discord.ext import commands, tasks
 
-from tokens.secret_token import *
+from tokens_new.secret_token import *
 from backend import *
 
 client = commands.Bot(command_prefix=".", case_insensitive = True, intents=discord.Intents.all())
@@ -31,21 +31,27 @@ async def lunch(ctx, which=None):
 
 @client.command()
 async def sync(ctx):
+    if ctx.author.id != dev_id:
+        return None
+    
     await ctx.send(f"Synced:\n {SyncFood()}")
 
 @client.command()
-async def join(ctx, *name):
+async def join(ctx, *, name):
     
-    result = AddUser(ctx.author.id, " ".join(name))
+    result = AddUser(ctx.author.id, name)
 
     if result:
-        await ctx.send(f"""Succesfully recieving notifications for {" ".join(name)}""")
+        await ctx.send(f"""Succesfully recieving notifications for [{name}]""")
     else:
-        await ctx.send(f"Already subscribed to {GetUser(ctx.author.id)}")
+        await ctx.send(f"Already subscribed to [{GetUser(ctx.author.id)}]")
+   
+@client.command()
+async def help(ctx):
+    await ctx.send("Auto-forward the original lunch messages to here: vincespanol@gmail.com, then:\n.join [name] <-- your official name which appears in the emails")
    
 
-
-@tasks.loop(seconds=20)
+@tasks.loop(minutes=20)
 async def refresher():
     #food reminder for today
     for id in ReadUsers():
@@ -101,7 +107,23 @@ async def refresher():
                 f.write(str(datetime.now().strftime("%Y.%m.%d")))
         
 
+@client.command()
+async def dm(ctx, _id, *, message):
+    if ctx.author.id != dev_id:
+        return None
+    if "<@" in _id:
+        _idL = list(_id)
+        try:
+            for i in ["@", "<", ">", "!"]:
+                _idL.remove(i)
+        except ValueError:
+            pass
 
+        _id = int("".join(_idL))
+    user = await client.fetch_user(int(_id))
+    msg_dm = await user.create_dm()
+    await msg_dm.send(message)
+    await ctx.send(f""" "{message}" sent to [{user}]""")
     
     
 

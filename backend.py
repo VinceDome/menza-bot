@@ -6,21 +6,23 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from datetime import datetime
 
+from tokens_new.genai import GOOGLE_KEY
+
 import google.generativeai as genai
-GOOGLE_KEY = "AIzaSyAixO4lbWLu7-CV4_2bCtEzO056jQ3HVp0"
+
 genai.configure(api_key=GOOGLE_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 
-API_KEY = "AIzaSyAixO4lbWLu7-CV4_2bCtEzO056jQ3HVp0"
+
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 def SyncFood():
   bigdata = []
 
   creds = None
-  if os.path.exists(os.getcwd()+"/tokens/token.json"):
-      creds = Credentials.from_authorized_user_file(os.getcwd()+"/tokens/token.json", SCOPES)
+  if os.path.exists(os.getcwd()+"/tokens_new/token.json"):
+      creds = Credentials.from_authorized_user_file(os.getcwd()+"/tokens_new/token.json", SCOPES)
     # If there are no (valid) credentials available, let the user log in.
 
   if not creds or not creds.valid:
@@ -30,10 +32,10 @@ def SyncFood():
         
       else:
         
-        flow = InstalledAppFlow.from_client_secrets_file(os.getcwd()+"/tokens/credentials.json", SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file(os.getcwd()+"/tokens_new/credentials.json", SCOPES)
         creds = flow.run_local_server(port=0)
       # Save the credentials for the next run
-      with open(os.getcwd()+"/tokens/token.json", "w") as token:
+      with open(os.getcwd()+"/tokens_new/token.json", "w") as token:
         token.write(creds.to_json())
 
   #creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -43,6 +45,11 @@ def SyncFood():
 
 
   results = messages.list(userId="me", q="akg@mealplanner.hu").execute()
+
+  users = ReadUsers()
+  names = {}
+  for i in users.values():
+    names.update({i:False})
 
   for i in results["messages"]:
     
@@ -100,12 +107,16 @@ def SyncFood():
     
     name = name.split("Étkező neve:")[1]
     name = name.split("Intézmény:")[0]
-    print(name)
+    
     
     for i in ["\n", "\t", "  ", "\r"]:
       name = name.replace(i, "")
 
-    
+    print(clean)
+
+    if names[name]:
+      continue
+
     #check if it contains food for future dates
     usable = [False, 0]
     for i in clean:
@@ -136,11 +147,17 @@ def SyncFood():
           
     else:
       #if its not usable, then the following emails will be useless as well
-      break
+      names[name] = True
+      if not False in names.values():
+        break
+
     
-  users = ReadUsers()
+  
   for i in users.values():
-    os.remove(f"data/{i}/bigdata.txt")
+    try:
+      os.remove(f"data/{i}/bigdata.txt")
+    except:
+      pass
     
 
   for i in bigdata:
@@ -242,6 +259,7 @@ def ReadUsers():
         users.update({int(i[0]):i[1]})
   except:
     pass
+
   return users
 
 def WriteUsers(users):
@@ -255,7 +273,9 @@ def AddUser(id, user):
 
   if id not in users:
     users.update({id:user})
+
     WriteUsers(users)
+    
     os.mkdir(f"data/{user}")
     for i in {"remind", "order"}:
       with open(f"data/{user}/{i}.txt", "a+") as f:
