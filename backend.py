@@ -195,7 +195,7 @@ def GetFood(user, date=None):
 
   bigdata = []
 
-  user = GetUser(user)
+  user = GetUsers()[user]
 
   with open(f"data/{user}/bigdata.txt", "r", encoding="utf-8") as f:
     fR = f.read().rstrip()
@@ -250,7 +250,7 @@ def GetFood(user, date=None):
   
   return final
 
-def ReadUsers():
+def GetUsers():
   users = {}
   try:
     with open("data/users.txt", "r", encoding="utf-8") as f:
@@ -261,21 +261,20 @@ def ReadUsers():
     pass
 
   return users
-
-def WriteUsers(users):
-  with open("data/users.txt", "w+", encoding="utf-8") as f:
-    for i in users.items():
-      print(i)
-      f.write(str(i[0])+"\t"+i[1])
       
 def AddUser(id, user):
-  users = ReadUsers()
+  users = GetUsers()
 
   if id not in users:
     users.update({id:user})
 
-    WriteUsers(users)
+    #update user file
+    with open("data/users.txt", "w+", encoding="utf-8") as f:
+      for i in users.items():
+        print(i)
+        f.write(str(i[0])+"\t"+i[1])
     
+    #create their directory
     os.mkdir(f"data/{user}")
     for i in {"remind", "order"}:
       with open(f"data/{user}/{i}.txt", "a+") as f:
@@ -286,6 +285,4 @@ def AddUser(id, user):
   else:
     return False
 
-def GetUser(id):
-  users = ReadUsers()
-  return users[id]
+

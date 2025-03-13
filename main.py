@@ -38,25 +38,22 @@ async def sync(ctx):
 
 @client.command()
 async def join(ctx, *, name):
-    
-    result = AddUser(ctx.author.id, name)
-
-    if result:
+    if AddUser(ctx.author.id, name):
         await ctx.send(f"""Succesfully recieving notifications for [{name}]""")
     else:
-        await ctx.send(f"Already subscribed to [{GetUser(ctx.author.id)}]")
+        await ctx.send(f"Already subscribed to [{GetUsers()[ctx.author.id]}]")
    
 @client.command()
 async def help(ctx):
-    await ctx.send("Auto-forward the original lunch messages to here: vincespanol@gmail.com, then:\n.join [name] <-- your official name which appears in the emails")
+    await ctx.send("Auto-forward the original lunch messages to here: vincespanol@gmail.com, then type:\n.join [name] <-- your official name which appears in the emails")
    
 
 @tasks.loop(minutes=20)
 async def refresher():
     #food reminder for today
-    for id in ReadUsers():
+    for id in GetUsers():
         
-        user = GetUser(id)
+        user = GetUsers()[id]
        
         with open(f"data/{user}/remind.txt", "r", encoding="utf-8") as f:
             history = f.read().rstrip()
