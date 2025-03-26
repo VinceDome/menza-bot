@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from datetime import datetime
 
-from tokens_new.genai import GOOGLE_KEY
+from tokens.genai import GOOGLE_KEY
 
 import google.generativeai as genai
 
@@ -21,8 +21,8 @@ def SyncFood():
   bigdata = []
 
   creds = None
-  if os.path.exists(os.getcwd()+"/tokens_new/token.json"):
-      creds = Credentials.from_authorized_user_file(os.getcwd()+"/tokens_new/token.json", SCOPES)
+  if os.path.exists(os.getcwd()+"/tokens/token.json"):
+      creds = Credentials.from_authorized_user_file(os.getcwd()+"/tokens/token.json", SCOPES)
     # If there are no (valid) credentials available, let the user log in.
 
   if not creds or not creds.valid:
@@ -32,10 +32,10 @@ def SyncFood():
         
       else:
         
-        flow = InstalledAppFlow.from_client_secrets_file(os.getcwd()+"/tokens_new/credentials.json", SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file(os.getcwd()+"/tokens/credentials.json", SCOPES)
         creds = flow.run_local_server(port=0)
       # Save the credentials for the next run
-      with open(os.getcwd()+"/tokens_new/token.json", "w") as token:
+      with open(os.getcwd()+"/tokens/token.json", "w") as token:
         token.write(creds.to_json())
 
   #creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -46,7 +46,7 @@ def SyncFood():
 
   results = messages.list(userId="me", q="akg@mealplanner.hu").execute()
 
-  users = ReadUsers()
+  users = GetUsers()
   names = {}
   for i in users.values():
     names.update({i:False})
@@ -89,6 +89,9 @@ def SyncFood():
       continue
 
     clean = []
+    for i in ["\r", "\n"]:
+      hardcode[0] = hardcode[0].replace(i, "")
+
     hardcode = hardcode[0].split("Ft")
 
     for a in hardcode:
@@ -109,11 +112,15 @@ def SyncFood():
     name = name.split("Intézmény:")[0]
     
     
-    for i in ["\n", "\t", "  ", "\r"]:
+    for i in ["\n", "\t", "\r", "  "]:
       name = name.replace(i, "")
+    if name[0] == " ":
+      name = list(name)
+      del name[0]
+      name = "".join(name)
 
     print(clean)
-
+    
     if names[name]:
       continue
 
@@ -126,16 +133,7 @@ def SyncFood():
 
     if usable[0]:
       for i in range(usable[1], len(clean)):
-          """
-          already = False
-          for a in bigdata:
-            
-            if clean[i] == a:
-              already = True
-              break
-          if not already:
-          """
-          
+    
           response = model.generate_content(f"Csak az étel kategóriája és a neve legyen feltüntetve az alábbi szövegrészletből. Ne írj ki semmi mást. {clean[i][1]}")
           clean[i].append(response.text)
 
@@ -162,32 +160,22 @@ def SyncFood():
 
   for i in bigdata:
     print(i)
-    try:
-      with open(f"data/{i[3]}/bigdata.txt", "a+", encoding="utf-8") as f:
+    
+    with open(f"data/{i[3]}/bigdata.txt", "a+", encoding="utf-8") as f:
+      try:
         del i[3]
         f.write("\t".join(i)+"%%%")
-    except:
+      except:
+        pass
       pass
-
-
-  """
-  with open(os.getcwd()+"/data/bigdata.txt", "w+", encoding="utf-8") as file:
-      for i in bigdata:
-        file.write("\t".join(i)+"%%%")
-  """
+    
   joined = []
   print(bigdata)
   for i in bigdata:
     joined.append("\t".join(i))  
   return "\n".join(joined)
-  
-  """
-  for i in bigdata:
-    if datetime.strptime(i[0], '%Y.%m.%d').date() == datetime.now().date():
-      return "----------------".join(i)
-  """
 
-def GetFood(user, date=None):
+def GetFood(user, og=False, date=None):
   if date == None:
     date = datetime.now().date()
   else:
@@ -233,17 +221,14 @@ def GetFood(user, date=None):
   if final == []:
     final = "No food ordered for today"
   else:
-    """
+    if og:
+      num = 1
+    else:
+      num=2
+
     rand = []
     for i in final:
-      rand.append("\t".join(i))
-      
-    print(final)
-    final = "\n".join(rand)
-    """
-    rand = []
-    for i in final:
-      rand.append(i[2])
+      rand.append(i[num])
     final = "\n".join(rand)
 
 
@@ -272,7 +257,7 @@ def AddUser(id, user):
     with open("data/users.txt", "w+", encoding="utf-8") as f:
       for i in users.items():
         print(i)
-        f.write(str(i[0])+"\t"+i[1])
+        f.write("\n"+str(i[0])+"\t"+i[1])
     
     #create their directory
     os.mkdir(f"data/{user}")

@@ -2,15 +2,12 @@ import os, discord, time, random, asyncio, math
 from datetime import datetime, timedelta
 from discord.ext import commands, tasks
 
-from tokens_new.secret_token import *
+from tokens.secret_token import *
 from backend import *
 
 client = commands.Bot(command_prefix=".", case_insensitive = True, intents=discord.Intents.all())
 client.remove_command("help")
 dev_id = 810910872792596550
-
-
-
 
 @client.event
 async def on_ready():
@@ -23,11 +20,16 @@ async def on_ready():
     
 
 @client.command()
-async def lunch(ctx, which=None):
+async def lunch(ctx, og="ai", which=None):
     if GetFood(user=ctx.author.id) == "No food ordered for today":
         SyncFood()
 
-    await ctx.send(GetFood(user=ctx.author.id, date=which))
+    if og.lower() == "og":
+        og = True
+    else:
+        og = False
+    
+    await ctx.send(GetFood(user=ctx.author.id, og=og, date=which))
 
 @client.command()
 async def sync(ctx):
