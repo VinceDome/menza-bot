@@ -1,9 +1,11 @@
 import os, discord, time, random, asyncio, math
 from datetime import datetime, timedelta
 from discord.ext import commands, tasks
+from discord.ui import Button, View
 
 from tokens.secret_token import *
 from backend import *
+from order import *
 
 client = commands.Bot(command_prefix=".", case_insensitive = True, intents=discord.Intents.all())
 client.remove_command("help")
@@ -11,8 +13,9 @@ dev_id = 810910872792596550
 
 @client.event
 async def on_ready():
-    global today
-
+    global today, session
+    session = Login()
+  
     print(f'{client.user} active!')
     activity = discord.Game(name="with today's lunch.", type=3)
     await client.change_presence(status=discord.Status.online, activity=activity)
@@ -50,6 +53,110 @@ async def help(ctx):
     await ctx.send("Auto-forward the original lunch messages to here: vincespanol@gmail.com, then type:\n.join [name] <-- your official name which appears in the emails")
    
 
+@client.command()
+async def order(ctx, day=None, free=False):
+    global session
+    if ctx.author.id != dev_id:
+        return None
+    
+    if day == None:
+        day = datetime.now() + timedelta(days=1)
+        
+    else:
+        try:
+            day = datetime.strptime(day, '%Y.%m.%d')
+        except ValueError:
+            await ctx.send("Invalid date format!")
+            return None
+    
+    data, session = GetMenu(session, day)
+    favs = [0, 1, 2, 3, 4, 7]
+    
+
+    #OrderFood(session, day, meal)
+    soup1 = Button(label=data[favs[0]].text, style = discord.ButtonStyle.green, emoji = "🍲")
+    soup2 = Button(label=data[favs[1]].text, style = discord.ButtonStyle.green, emoji = "🍲")
+    main1 = Button(label=data[favs[2]].text, style = discord.ButtonStyle.blurple, emoji = "🍝")
+    main2 = Button(label=data[favs[3]].text, style = discord.ButtonStyle.blurple, emoji = "🍝")
+    main3 = Button(label=data[favs[4]].text, style = discord.ButtonStyle.blurple, emoji = "🍝")
+    street = Button(label=data[favs[5]].text, style = discord.ButtonStyle.red, emoji = "🍔")
+    confirm = Button(label="Confirm", style = discord.ButtonStyle.green, emoji = "✅")
+
+    staged = []
+    
+    async def soup1_call(interaction):
+        selected = data[favs[0]]
+        if selected in staged:
+            staged.remove(selected)
+        else:
+            staged.append(selected)
+        await interaction.response.edit_message(content=f"""Staged: {"---".join(i.text for i in staged)}""", view=view)
+    async def soup2_call(interaction):
+        selected = data[favs[1]]
+        if selected in staged:
+            staged.remove(selected)
+        else:
+            staged.append(selected)
+        await interaction.response.edit_message(content=f"""Staged: {"---".join(i.text for i in staged)}""", view=view)
+        
+    async def main1_call(interaction):
+        selected = data[favs[2]]
+        if selected in staged:
+            staged.remove(selected)
+        else:
+            staged.append(selected)
+        await interaction.response.edit_message(content=f"""Staged: {"---".join(i.text for i in staged)}""", view=view)
+        
+    async def main2_call(interaction):
+        selected = data[favs[3]]
+        if selected in staged:
+            staged.remove(selected)
+        else:
+            staged.append(selected)
+        await interaction.response.edit_message(content=f"""Staged: {"---".join(i.text for i in staged)}""", view=view)
+        
+       
+    async def main3_call(interaction):
+        selected = data[favs[4]]
+        if selected in staged:
+            staged.remove(selected)
+        else:
+            staged.append(selected)
+        await interaction.response.edit_message(content=f"""Staged: {"---".join(i.text for i in staged)}""", view=view)
+       
+    async def street_call(interaction):
+        selected = data[favs[5]]
+        if selected in staged:
+            staged.remove(selected)
+        else:
+            staged.append(selected)
+        await interaction.response.edit_message(content=f"""Staged: {"---".join(i.text for i in staged)}""", view=view)
+    
+    async def confirm_call(interaction):
+        await interaction.response.edit_message(content=f"""Ordered: {"---".join(i.text for i in staged)}""")
+        OrderFood(session, staged, free)
+
+    soup1.callback = soup1_call
+    soup2.callback = soup2_call
+    main1.callback = main1_call
+    main2.callback = main2_call
+    main3.callback = main3_call
+    street.callback = street_call
+    confirm.callback = confirm_call
+
+    view = View()
+    view.add_item(soup1)
+    view.add_item(soup2)
+    view.add_item(main1)
+    view.add_item(main2)
+    view.add_item(main3)
+    view.add_item(street)
+    view.add_item(confirm)
+
+    await ctx.send("Order", view=view)
+    
+
+
 @tasks.loop(minutes=20)
 async def refresher():
     #food reminder for today
@@ -78,11 +185,6 @@ async def refresher():
         nextdate = datetime.now().date() + timedelta(days=1)
         if nextdate.isoweekday() in set((6, 7)):
             nextdate += timedelta(days=8-nextdate.isoweekday())
-
-
-            
-        
-
 
         with open(f"data/{user}/order.txt", "r") as f:
             order = f.read().rstrip()
