@@ -16,7 +16,6 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
-
 def SyncFood():
   bigdata = []
 
