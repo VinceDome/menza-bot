@@ -76,7 +76,7 @@ async def order(ctx, day=None, free=False):
     
     
 
-    #OrderFood(session, day, meal)
+
     def ChangeView(change=None, mode=False):
         global buttons, view
         if change is None:
@@ -144,6 +144,8 @@ async def order(ctx, day=None, free=False):
         await check(interaction, 5)
     async def preference_call(interaction):
         print(f"added {staged} to preference")
+        print(staged,  "staged")
+        Preference(staged)
         await interaction.response.edit_message(view=view)
         pass
     async def confirm_call(interaction):
@@ -210,19 +212,21 @@ async def refresher():
             if id == dev_id:
                 menu, session = GetMenu(session, nextdate)
                 
-                with open("data/street.txt", "r") as f:
-                    street = f.read().splitlines()
+                preference = Preference()
                 
+                suggested = []
                 #! totally broken and not working
-                if menu[5] in street:
-                    
-                    suggested = menu[5]
+                if menu[7].text in preference:
+                    suggested.append(menu[7].text)
+    
                 else:
                     for i in menu:
-                        suggested = menu[5]
+                        if i.text in preference:
+                            suggested.append(i.text)
+                            break
                 
                 
-                await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}\nSuggested: {suggested}""")
+                await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}\nSuggested: {"----".join(suggested)}""")
                 
                 
             else:

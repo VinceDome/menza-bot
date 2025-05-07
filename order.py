@@ -1,9 +1,9 @@
-import requests, json
+import requests, json, os
 from bs4 import BeautifulSoup
 from tokens.ssocreds import *
 from datetime import datetime, timedelta
 
-with open("data/street.txt", "a+") as f:
+with open("data/preference.txt", "a+") as f:
     pass
 
 def ExtractMenu(soup):
@@ -71,7 +71,6 @@ def Login():
 
 def GetMenu(session, day):
     biaURL = "https://etelrendeles.akg.hu/bia-ebed-rendeles"
-    #! FJÉSKDJFÉLKSJDFÉLKSJDFÉKLJSDÉLFKJSÉLKDFJÉSLKDJf
     
     response = session.get(biaURL)
     soup = BeautifulSoup(response.text, "html.parser")
@@ -94,8 +93,8 @@ def GetMenu(session, day):
         #set url, perform date change
         datechangeurl = f"https://etelrendeles.akg.hu/index.php?page=bia-het-valtas&c=1&week={week[0]}&year={current_year}&date1={week[1]}&date2={week[2]}&p=bia-ebed-rendeles"
         response = session.get(datechangeurl)
+        soup = BeautifulSoup(response.text, "html.parser")
    
-    soup = BeautifulSoup(response.text, "html.parser")
     data = ExtractMenu(soup)
 
     return data[day.isoweekday()-1], session
@@ -163,16 +162,33 @@ def OrderFood(session, meals, free):
     response = session.get(payURL)
     print(response.text)
 
+def Preference(data=None):
+    preferencePath = "data/preference.txt"
+    
+    with open(preferencePath, "r", encoding="utf-8") as f:
+        savedPreference = f.read().split("%%%")
+    if savedPreference == [""]:
+        savedPreference = []
+
+    if data is None:
+        return savedPreference
+    else:
+        data = [i.text for i in data]
+
+        
+        for i in data:
+            if i not in savedPreference:
+                savedPreference.append(i)
+            else:
+                savedPreference.remove(i)
+
+        os.remove(preferencePath)
+        print(savedPreference)
+        with open(preferencePath, "w+", encoding="utf-8") as f:
+            f.write("%%%".join(savedPreference))
+        
+
 # load in all foods and its appropriate data
 # make the user select one //// develop a ranking system
 # make user give ok command
 # order the food
-
-
-
-
-
-
-
-
-
