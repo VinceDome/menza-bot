@@ -72,7 +72,9 @@ async def order(ctx, day=None, free=False):
             return None
     
     data, session = GetMenu(session, day)
+    
     favs = [0, 1, 2, 3, 4, 7]
+
     
     
 
@@ -215,7 +217,7 @@ async def refresher():
                 preference = Preference()
                 
                 suggested = []
-                #! totally broken and not working
+                
                 if menu[7].text in preference:
                     suggested.append(menu[7].text)
     
@@ -254,8 +256,6 @@ async def dm(ctx, _id, *, message):
     await msg_dm.send(message)
    
     await ctx.send(f""" "{message}" sent to [{user}]""")
-    
-    
 
 
 @client.event

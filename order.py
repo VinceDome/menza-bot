@@ -9,34 +9,21 @@ with open("data/preference.txt", "a+") as f:
 def ExtractMenu(soup):
     data = [[] for i in range(5)]
     current_day = -1
-    first_checker = "nem"
-
-    for i in soup.find_all("div", {"class":"mealplanner-menu-cell"}):
+    
+    
+    for i in soup.find_all("div", class_=lambda x: x in ["mealplanner-menu-cell--head-date", "mealplanner-menu-cell-food"]):
         
-
+        print(i)
         if i["style"] == "order:0;":
-            #if this is the first order:0, it's the header
-            if first_checker == "nem":
-                first_checker = False
-                continue
-            
-            #if we reach another order:0, it's the first  day
-            elif not first_checker:
-                first_checker = True
-                
-
-            #it's the next day
             current_day +=1
+            if current_day > 4:
+                break
             continue
         elif i["style"] == "order:1;":
             continue
 
-        #if the variable is false, it means we're in the header
-        if not first_checker:
-            continue
-
-        
         data[current_day].append(i)
+        
     return data
 
 def Login():
@@ -94,9 +81,9 @@ def GetMenu(session, day):
         datechangeurl = f"https://etelrendeles.akg.hu/index.php?page=bia-het-valtas&c=1&week={week[0]}&year={current_year}&date1={week[1]}&date2={week[2]}&p=bia-ebed-rendeles"
         response = session.get(datechangeurl)
         soup = BeautifulSoup(response.text, "html.parser")
-   
+    
     data = ExtractMenu(soup)
-
+ 
     return data[day.isoweekday()-1], session
 
 def OrderFood(session, meals, free):
@@ -149,10 +136,6 @@ def OrderFood(session, meals, free):
     print(response.text)
 
     response = session.get(biaURL)
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    data = ExtractMenu(soup)
-    
 
     #feladás
     response = session.get(feladasURL)
