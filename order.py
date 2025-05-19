@@ -15,7 +15,7 @@ def ExtractMenu(soup):
         
         print(i)
         if i["style"] == "order:0;":
-            current_day +=1
+            current_day += 1
             if current_day > 4:
                 break
             continue
@@ -81,9 +81,9 @@ def GetMenu(session, day):
         datechangeurl = f"https://etelrendeles.akg.hu/index.php?page=bia-het-valtas&c=1&week={week[0]}&year={current_year}&date1={week[1]}&date2={week[2]}&p=bia-ebed-rendeles"
         response = session.get(datechangeurl)
         soup = BeautifulSoup(response.text, "html.parser")
-    
+
     data = ExtractMenu(soup)
- 
+    
     return data[day.isoweekday()-1], session
 
 def OrderFood(session, meals, free):
@@ -114,6 +114,7 @@ def OrderFood(session, meals, free):
     order_data = {
         "data": json.dumps(order_data)
     }
+
     """
     order_data = {
         "data": json.dumps([
@@ -135,7 +136,7 @@ def OrderFood(session, meals, free):
     print(response)
     print(response.text)
 
-    response = session.get(biaURL)
+    #response = session.get(biaURL)
 
     #feladás
     response = session.get(feladasURL)

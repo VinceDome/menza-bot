@@ -55,30 +55,49 @@ async def help(ctx):
     await ctx.send("Auto-forward the original lunch messages to here: vincespanol@gmail.com, then type:\n.join [name] <-- your official name which appears in the emails")
    
 
+class ProgressBar:
+    def __init__(self, ctx):
+        self.ctx = ctx
+    
+    async def setup(self):
+        self.content = ["Starting..."]
+        self.msg = await self.ctx.send(content="\n".join(self.content))
+    
+    async def update(self, message, view=None):
+        self.content.append(message)
+        await self.msg.edit(content="\n".join(self.content), view=view)
+
 @client.command()
-async def order(ctx, day=None, free=False):
+async def order(ctx, day=1, free=False):
     global session
+    
+
+    prog = ProgressBar(ctx)
+    await prog.setup()
+    
+    
     if ctx.author.id not in (dev_id, bot_id):
         return None
-    
-    if day == None:
-        day = datetime.now() + timedelta(days=1)
-        
-    else:
+    try:
+        day = datetime.strptime(day, '%Y.%m.%d')
+    except:
         try:
-            day = datetime.strptime(day, '%Y.%m.%d')
-        except ValueError:
-            await ctx.send("Invalid date format!")
+            day = int(day)
+        except:
+            await prog.update("Invalid date format")
             return None
     
+        day = datetime.now() + timedelta(days=day)
+        if day.isoweekday() in set((6, 7)):
+            day += timedelta(days=8-day.isoweekday())
+        
+
+   
+    await prog.update("Fetching menu...")
+
     data, session = GetMenu(session, day)
     
     favs = [0, 1, 2, 3, 4, 7]
-
-    
-    
-
-
     def ChangeView(change=None, mode=False):
         global buttons, view
         if change is None:
@@ -121,7 +140,6 @@ async def order(ctx, day=None, free=False):
         
 
     staged = []
-
     async def check(interaction, index):
         selected = data[favs[index]]
         if selected in staged:
@@ -144,23 +162,24 @@ async def order(ctx, day=None, free=False):
         await check(interaction, 4)
     async def street_call(interaction):
         await check(interaction, 5)
+
     async def preference_call(interaction):
         print(f"added {staged} to preference")
         print(staged,  "staged")
         Preference(staged)
         await interaction.response.edit_message(view=view)
-        pass
+        
+
     async def confirm_call(interaction):
         ChangeView(change=7, mode="end")
         await interaction.response.edit_message(view=view)
         OrderFood(session, staged, free)
     
+    await prog.update("Creating view...")
 
-    
-
-    
     ChangeView()
-    await ctx.send(view=view)
+    await prog.update("DONE!", view=view)
+   
     
 
 
@@ -268,7 +287,6 @@ async def on_message(message):
 
 
 
-    
     if message.content.startswith("ping"):
         await message.channel.send(f"pong ({round(client.latency*1000)}ms)")
         print("-----------------------\nreplied to ping\n-----------------------")
