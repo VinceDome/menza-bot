@@ -1,4 +1,4 @@
-import subprocess, time, discord
+import subprocess, time, discord, os
 from tokens.secret_token import *
 from discord.ext import commands, tasks
 
@@ -44,6 +44,19 @@ async def crash(ctx):
     exit(0)
     
 
-
+@client.command()
+async def shutdown(ctx):
+    global proc
+    if ctx.author.id != dev_id:
+        return None
+    
+    if os.name == "posix":
+        proc.terminate()
+        
+        await ctx.send("stopped menzabot, shutting down...")
+        os.system("sudo shutdown -h now")
+    else:
+        await ctx.send("can only shutdown on linux")
+    
 
 client.run(MENZA_TOKEN)

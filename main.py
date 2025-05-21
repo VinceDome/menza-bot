@@ -7,10 +7,11 @@ from tokens.secret_token import *
 from backend import *
 from order import *
 
-client = commands.Bot(command_prefix=".", case_insensitive = True, intents=discord.Intents.all())
-client.remove_command("help")
 dev_id = 810910872792596550
 bot_id = 826458615027597343
+
+client = commands.Bot(command_prefix=".", case_insensitive = True, intents=discord.Intents.all())
+client.remove_command("help")
 
 @client.event
 async def on_ready():
@@ -180,8 +181,6 @@ async def order(ctx, day=1, free=False):
     ChangeView()
     await prog.update("DONE!", view=view)
    
-    
-
 
 @tasks.loop(minutes=20)
 async def refresher():
@@ -207,56 +206,84 @@ async def refresher():
                 
                 with open(f"data/{user}/remind.txt", "w", encoding="utf-8") as f:
                     f.write(str(datetime.now().strftime("%Y.%m.%d")))
+        
 
-        #order reminder
+        #get the next date
         nextdate = datetime.now() + timedelta(days=1)
         if nextdate.isoweekday() in set((6, 7)):
             nextdate += timedelta(days=8-nextdate.isoweekday())
 
-        with open(f"data/{user}/order.txt", "r") as f:
-            order = f.read().rstrip()
+
+        #order reminder
+        if datetime.now().hour < 17:
+            with open(f"data/{user}/order.txt", "r") as f:
+                order = f.read().rstrip()
+            if datetime.strptime(order, '%Y.%m.%d').date() < datetime.now().date():
+                for i in range(2):
+                    nextfood = GetFood(user=id, date=nextdate.strftime("%Y.%m.%d"))
+                    if nextfood == "No food ordered for today":
+                        #only refresh the first time
+                        if i == 0:
+                            SyncFood()
+                    else:
+                        #exit if there is food ordered
+                        return
+                    
+                userD = await client.fetch_user(id)
+                msg_dm = await userD.create_dm()
+
+                if id == dev_id:
+                    menu, session = GetMenu(session, nextdate)
+                    
+                    preference = Preference()
+                    
+                    suggested = []
+                    
+                    if menu[7].text in preference:
+                        suggested.append(menu[7].text)
         
-        if datetime.strptime(order, '%Y.%m.%d').date() < datetime.now().date():
-            for i in range(2):
-                nextfood = GetFood(user=id, date=nextdate.strftime("%Y.%m.%d"))
-                if nextfood == "No food ordered for today":
-                    #only refresh the first time
-                    if i == 0:
-                        SyncFood()
+                    else:
+                        for i in menu:
+                            if i.text in preference:
+                                suggested.append(i.text)
+                                break
+                    
+                    
+                    await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}\nSuggested: {"----".join(suggested)}""")
+                    
+                    
                 else:
-                    #exit if there is food ordered
-                    return
-                
+                    await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}""")
+
+                with open(f"data/{user}/order.txt", "w") as f:
+                    f.write(str(datetime.now().strftime("%Y.%m.%d")))
+        else:
             userD = await client.fetch_user(id)
             msg_dm = await userD.create_dm()
 
             if id == dev_id:
                 menu, session = GetMenu(session, nextdate)
-                
+                        
                 preference = Preference()
                 
                 suggested = []
                 
                 if menu[7].text in preference:
-                    suggested.append(menu[7].text)
-    
+                    suggested.append(menu[7])
+
                 else:
                     for i in menu:
                         if i.text in preference:
-                            suggested.append(i.text)
+                            suggested.append(i)
                             break
-                
-                
-                await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}\nSuggested: {"----".join(suggested)}""")
-                
-                
-            else:
-                await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}""")
 
-            with open(f"data/{user}/order.txt", "w") as f:
-                f.write(str(datetime.now().strftime("%Y.%m.%d")))
-        
-
+                if not suggested == []:
+                    OrderFood(session, suggested[0])
+                    await msg_dm.send(f"""Ordered food for {nextdate.strftime("%Y.%m.%d")}\nOrdered: {"----".join(i.text for i in suggested)}""")
+                else:
+                    await msg_dm.send(f"Can't order food for {nextdate.strftime("%Y.%m.%d")}, no preference set")
+                    
+            
 @client.command()
 async def dm(ctx, _id, *, message):
     if ctx.author.id != dev_id:
