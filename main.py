@@ -281,7 +281,7 @@ async def refresher():
                     OrderFood(session, suggested[0])
                     await msg_dm.send(f"""Ordered food for {nextdate.strftime("%Y.%m.%d")}\nOrdered: {"----".join(i.text for i in suggested)}""")
                 else:
-                    await msg_dm.send(f"Can't order food for {nextdate.strftime("%Y.%m.%d")}, no preference set")
+                    await msg_dm.send(f"""Can't order food for {nextdate.strftime("%Y.%m.%d")}, no preference set""")
                     
             
 @client.command()
