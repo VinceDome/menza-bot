@@ -54,8 +54,12 @@ async def join(ctx, *, name):
 @client.command()
 async def help(ctx):
     await ctx.send("Auto-forward the original lunch messages to here: vincespanol@gmail.com, then type:\n.join [name] <-- your official name which appears in the emails")
-   
 
+@client.command()
+async def preference(ctx):
+  if ctx.author.id != dev_id:
+    return None
+  await ctx.send(Preference())
 class ProgressBar:
     def __init__(self, ctx):
         self.ctx = ctx
