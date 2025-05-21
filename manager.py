@@ -57,6 +57,14 @@ async def shutdown(ctx):
         os.system("sudo shutdown -h now")
     else:
         await ctx.send("can only shutdown on linux")
+
+@client.command()
+async def sync(ctx):
+    if ctx.author.id != dev_id:
+        return None
+    proc.terminate()
+    await ctx.send("syncing menzabot code...")
+    os.system("./refresh.sh")
     
 
 client.run(MENZA_TOKEN)
