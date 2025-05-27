@@ -149,12 +149,7 @@ def SyncFood():
         break
 
     
-  
-  for i in users.values():
-    try:
-      os.remove(f"data/{i}/bigdata.txt")
-    except:
-      pass
+   
     
 
   for i in bigdata:
@@ -182,19 +177,16 @@ def GetFood(user, og=False, date=None):
 
   bigdata = []
 
-  user = GetUsers()[user]
-
+  user = GetUsers()[user]  
+  
   with open(f"data/{user}/bigdata.txt", "r", encoding="utf-8") as f:
     fR = f.read().rstrip()
     if not fR == "":
-      temp = fR.split("%%%")
-      
-
-      for i in temp:
+      for i in fR.split("%%%"):
         if i != "":
           bigdata.append(i.split("\t"))
       
-    
+
   deletefrom = None
   for i in range(len(bigdata)-1, -1, -1):
     
@@ -243,7 +235,6 @@ def GetUsers():
         users.update({int(i[0]):i[1]})
   except:
     pass
-
   return users
       
 def AddUser(id, user):
@@ -260,10 +251,13 @@ def AddUser(id, user):
     
     #create their directory
     os.mkdir(f"data/{user}")
-    for i in {"remind", "order"}:
+    for i in ["remind", "order", "autoorder"]:
       with open(f"data/{user}/{i}.txt", "a+") as f:
         f.write("2025.01.01")
         pass
+
+    with open(f"data/{user}/bigdata.txt", "w+") as f:
+      pass
 
     return True
   else:

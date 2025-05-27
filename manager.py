@@ -39,9 +39,35 @@ async def crash(ctx):
     if ctx.author.id != dev_id:
         return None
     
-    proc.terminate()
-    await ctx.send("stopped menzabot, exiting...")
+    msg = ""
+    try:
+        proc.terminate()
+        msg += "stopped menzabot,  "
+    except:
+        msg += "menzabot already stopped,  "
+    msg += "exiting...."
+
+    await ctx.send(msg)
     exit(0)
+    
+
+@client.command()
+async def restart(ctx):
+    global proc
+    if ctx.author.id != dev_id:
+        return None
+    
+    msg = ""
+    try:
+        proc.terminate()
+        msg += "stopped menzabot,  "
+    except:
+        msg += "menzabot already stopped,  "
+
+    msg += "restarting systemmd...."
+
+    await ctx.send(msg)
+    os.system("systemctl restart menzabot.service")
     
 
 @client.command()
@@ -51,10 +77,15 @@ async def shutdown(ctx):
         return None
     
     if os.name == "posix":
-        proc.terminate()
-        
-        await ctx.send("stopped menzabot, shutting down...")
-        os.system("sudo shutdown -h now")
+        msg = ""
+        try:
+            proc.terminate()
+            msg += "stopped menzabot,  "
+        except:
+            msg += "menzabot already stopped,  "
+
+        msg += "shutting down...."
+        os.system("shutdown -h now")
     else:
         await ctx.send("can only shutdown on linux")
 

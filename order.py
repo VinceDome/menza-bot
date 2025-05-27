@@ -1,10 +1,8 @@
-import requests, json, os
+import requests, json, random
 from bs4 import BeautifulSoup
 from tokens.ssocreds import *
 from datetime import datetime, timedelta
 
-with open("data/preference.txt", "a+") as f:
-    pass
 
 def ExtractMenu(soup):
     data = [[] for i in range(5)]
@@ -166,11 +164,44 @@ def Preference(data=None):
             else:
                 savedPreference.remove(i)
 
-        os.remove(preferencePath)
+        
         print(savedPreference)
-        with open(preferencePath, "w+", encoding="utf-8") as f:
+        with open(preferencePath, "w", encoding="utf-8") as f:
             f.write("%%%".join(savedPreference))
         
+#! still doesn't recommend correct food (menu not working, doesN't know to order soup too)
+def GetSuggested(menu):
+    preference = Preference()            
+    suggested = []
+    print(menu[7]["style"], "Ez a menü7")
+    
+    #4, 5 = soup
+    #6, 7, 8 = main course
+    #12 = street food
+
+    #if street food is in preference, it takes priority
+    if menu[7].text in preference:
+        return menu[7]
+    else:
+        #add all preferred items to suggested
+        for i in menu:
+            if i.text in preference:
+                suggested.append(i)
+        
+        #sort the suggested items into soup and main course
+        soup = []
+        main = []
+        for i in suggested:
+            if i["style"] in ["order:4;", "order:5;"]:
+                soup.append(i)
+            elif i["style"] in ["order:6;", "order:7;", "order:8;"]:
+                main.append(i)
+        
+        #if either soup or main is empty, return False because we will order only if it's sure
+        if len(soup) == 0 or len(main) == 0:
+            return False
+        else:
+            return (random.choice(soup), random.choice(main))
 
 # load in all foods and its appropriate data
 # make the user select one //// develop a ranking system

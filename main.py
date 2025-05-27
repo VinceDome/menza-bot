@@ -13,6 +13,10 @@ bot_id = 826458615027597343
 client = commands.Bot(command_prefix=".", case_insensitive = True, intents=discord.Intents.all())
 client.remove_command("help")
 
+#create preference file
+with open("data/preference.txt", "a+") as f:
+    pass
+
 @client.event
 async def on_ready():
     global today, session
@@ -184,44 +188,45 @@ async def order(ctx, day=1, free=False):
 
     ChangeView()
     await prog.update("DONE!", view=view)
-   
+
+
+#remind.txt is the reminder daily at 10am
+#order.txt is the reminder to order food for the next day after 5pm
 
 @tasks.loop(minutes=20)
 async def refresher():
-    global session
+    global session  
     #food reminder for today
     for id in GetUsers():
         
         user = GetUsers()[id]
-       
+        userD = await client.fetch_user(id)
+        msg_dm = await userD.create_dm()
+
+        #! region send the food reminder
         with open(f"data/{user}/remind.txt", "r", encoding="utf-8") as f:
             history = f.read().rstrip()
         
         if datetime.strptime(history, '%Y.%m.%d').date() < datetime.now().date():
-           
             if datetime.now().hour >= 10:
-
                 if GetFood(user=id) == "No food ordered for today":
                     SyncFood()
-                
-                userD = await client.fetch_user(id)
-                msg_dm = await userD.create_dm()
                 await msg_dm.send(GetFood(user=id))
                 
                 with open(f"data/{user}/remind.txt", "w", encoding="utf-8") as f:
                     f.write(str(datetime.now().strftime("%Y.%m.%d")))
-        
-
+        #endregion
         #get the next date
         nextdate = datetime.now() + timedelta(days=1)
         if nextdate.isoweekday() in set((6, 7)):
             nextdate += timedelta(days=8-nextdate.isoweekday())
 
-
         #order reminder
         if datetime.now().hour < 17:
+
             with open(f"data/{user}/order.txt", "r") as f:
                 order = f.read().rstrip()
+
             if datetime.strptime(order, '%Y.%m.%d').date() < datetime.now().date():
                 for i in range(2):
                     nextfood = GetFood(user=id, date=nextdate.strftime("%Y.%m.%d"))
@@ -233,27 +238,19 @@ async def refresher():
                         #exit if there is food ordered
                         return
                     
-                userD = await client.fetch_user(id)
-                msg_dm = await userD.create_dm()
 
                 if id == dev_id:
                     menu, session = GetMenu(session, nextdate)
+                    suggested = GetSuggested(menu)
                     
-                    preference = Preference()
-                    
-                    suggested = []
-                    
-                    if menu[7].text in preference:
-                        suggested.append(menu[7].text)
-        
-                    else:
-                        for i in menu:
-                            if i.text in preference:
-                                suggested.append(i.text)
-                                break
+                    try:
+                        suggested = "----".join(suggested)
+                    except:
+                        print("cannot join")
+                        pass
                     
                     
-                    await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}\nSuggested: {"----".join(suggested)}""")
+                    await msg_dm.send(f"""Reminder to order food for {nextdate.strftime("%Y.%m.%d")}\nSuggested: {suggested}""")
                     
                     
                 else:
@@ -261,31 +258,39 @@ async def refresher():
 
                 with open(f"data/{user}/order.txt", "w") as f:
                     f.write(str(datetime.now().strftime("%Y.%m.%d")))
+
         else:
-            userD = await client.fetch_user(id)
-            msg_dm = await userD.create_dm()
+            with open(f"data/{user}/autoorder.txt", "r") as f:
+                autoorder = f.read().rstrip()
 
-            if id == dev_id:
+            if datetime.strptime(autoorder, '%Y.%m.%d').date() < datetime.now().date():
+                for i in range(2):
+                    nextfood = GetFood(user=id, date=nextdate.strftime("%Y.%m.%d"))
+                    if nextfood == "No food ordered for today":
+                        #only refresh the first time
+                        if i == 0:
+                            SyncFood()
+                    else:
+                        #exit if there is food ordered
+                        return
+                    
+           
+            
                 menu, session = GetMenu(session, nextdate)
-                        
-                preference = Preference()
-                
-                suggested = []
-                
-                if menu[7].text in preference:
-                    suggested.append(menu[7])
+                suggested = GetSuggested(menu) 
 
-                else:
-                    for i in menu:
-                        if i.text in preference:
-                            suggested.append(i)
-                            break
-
-                if not suggested == []:
-                    OrderFood(session, suggested[0])
-                    await msg_dm.send(f"""Ordered food for {nextdate.strftime("%Y.%m.%d")}\nOrdered: {"----".join(i.text for i in suggested)}""")
-                else:
+                
+                
+                if not suggested:
                     await msg_dm.send(f"""Can't order food for {nextdate.strftime("%Y.%m.%d")}, no preference set""")
+                else:
+                    #OrderFood(session, suggested)
+                    #! won't let it order food because I'm still not sure
+                    print("would have ordered:", suggested)
+                    joined = "\n".join(i.text for i in suggested)
+                    await msg_dm.send(f"""Ordered food for {nextdate.strftime("%Y.%m.%d")}\nOrdered:\n{joined}""")
+                with open(f"data/{user}/autoorder.txt", "w") as f:
+                    f.write(str(datetime.now().strftime("%Y.%m.%d")))
                     
             
 @client.command()
