@@ -1,4 +1,4 @@
-import subprocess, time, discord, os
+import subprocess, discord, os
 from tokens.secret_token import *
 from discord.ext import commands, tasks
 
@@ -28,10 +28,11 @@ async def stop(ctx):
     global proc
     if ctx.author.id != dev_id:
         return None
-    
-    proc.terminate()
-    
-    await ctx.send("stopped menzabot")
+    try:
+        proc.terminate()
+        await ctx.send("stopped menzabot")
+    except:
+        await ctx.send("menzabot already stopped")    
 
 @client.command()
 async def crash(ctx):
@@ -49,7 +50,6 @@ async def crash(ctx):
 
     await ctx.send(msg)
     exit(0)
-    
 
 @client.command()
 async def restart(ctx):
@@ -68,7 +68,6 @@ async def restart(ctx):
 
     await ctx.send(msg)
     os.system("systemctl restart menzabot.service")
-    
 
 @client.command()
 async def shutdown(ctx):
@@ -93,8 +92,16 @@ async def shutdown(ctx):
 async def sync(ctx):
     if ctx.author.id != dev_id:
         return None
-    proc.terminate()
-    await ctx.send("syncing menzabot code...")
+    msg = ""
+    try:
+        proc.terminate()
+        msg += "stopped menzabot,  "
+    except:
+        msg += "menzabot already stopped,  "
+    
+    msg += "syncing menzabot code..."
+
+    await ctx.send(msg)
     os.system("./refresh.sh")
     
 

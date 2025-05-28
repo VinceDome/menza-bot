@@ -26,7 +26,6 @@ async def on_ready():
     activity = discord.Game(name="with today's lunch.", type=3)
     await client.change_presence(status=discord.Status.online, activity=activity)
     refresher.start()
-    
 
 @client.command()
 async def lunch(ctx, og="ai", which=None):
@@ -64,6 +63,7 @@ async def preference(ctx):
   if ctx.author.id != dev_id:
     return None
   await ctx.send(Preference())
+
 class ProgressBar:
     def __init__(self, ctx):
         self.ctx = ctx
