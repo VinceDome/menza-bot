@@ -149,7 +149,9 @@ def SyncFood():
         break
 
     
-   
+  for i in users.values():
+    with open(f"data/{i}/bigdata.txt", "w", encoding="utf-8") as f:
+        pass
     
 
   for i in bigdata:
