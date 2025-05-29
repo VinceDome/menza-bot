@@ -45,6 +45,7 @@ def SyncFood():
 
   results = messages.list(userId="me", q="akg@mealplanner.hu").execute()
 
+  #initializing the list which tracks what emails are useless
   users = GetUsers()
   names = {}
   for i in users.values():

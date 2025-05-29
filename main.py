@@ -110,12 +110,32 @@ async def order(ctx, day=1, free=False):
     def ChangeView(change=None, mode=False):
         global buttons, view
         if change is None:
-            soup1 = Button(label=data[favs[0]].text, style = discord.ButtonStyle.gray, emoji = "🍲")
-            soup2 = Button(label=data[favs[1]].text, style = discord.ButtonStyle.gray, emoji = "🍲")
-            main1 = Button(label=data[favs[2]].text, style = discord.ButtonStyle.gray, emoji = "🍝")
-            main2 = Button(label=data[favs[3]].text, style = discord.ButtonStyle.gray, emoji = "🍝")
-            main3 = Button(label=data[favs[4]].text, style = discord.ButtonStyle.gray, emoji = "🍝")
-            street = Button(label=data[favs[5]].text, style = discord.ButtonStyle.gray, emoji = "🍔")
+            
+            suggested = GetSuggested(data)
+            ordered = GetFood(user=dev_id, date=day.strftime("%Y.%m.%d"), og="élaksjdf")
+            autocolor = []
+            
+            for i in favs:
+                print(data[i].text)
+                try:
+                    shortened = data[i].text[:80]
+                except:
+                    shortened = data[i].text
+
+                if data[i].text in ordered:
+                    autocolor.append([shortened, discord.ButtonStyle.red])
+                elif data[i] in suggested:
+                    autocolor.append([shortened, discord.ButtonStyle.blurple])
+                else:
+                    autocolor.append([shortened, discord.ButtonStyle.gray])
+
+            
+            soup1 = Button(label=autocolor[0][0], style = autocolor[0][1], emoji = "🍲")
+            soup2 = Button(label=autocolor[1][0], style = autocolor[1][1], emoji = "🍲")
+            main1 = Button(label=autocolor[2][0], style = autocolor[2][1], emoji = "🍝")
+            main2 = Button(label=autocolor[3][0], style = autocolor[3][1], emoji = "🍝")
+            main3 = Button(label=autocolor[4][0], style = autocolor[4][1], emoji = "🍝")
+            street = Button(label=autocolor[5][0], style = autocolor[5][1], emoji = "🍔")
             preference = Button(label="Add to preference", style = discord.ButtonStyle.green, emoji = "⭐")
             confirm = Button(label="Confirm", style = discord.ButtonStyle.green, emoji = "✅")
             buttons = [soup1, soup2, main1, main2, main3, street, preference, confirm]

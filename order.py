@@ -199,7 +199,7 @@ def GetSuggested(menu):
         
         #if either soup or main is empty, return False because we will order only if it's sure
         if len(soup) == 0 or len(main) == 0:
-            return False
+            return []
         else:
             return (random.choice(soup), random.choice(main))
 
