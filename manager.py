@@ -102,7 +102,7 @@ async def sync(ctx):
     msg += "syncing menzabot code..."
 
     await ctx.send(msg)
-    os.system("./refresh.sh")
+    os.system("sudo -u vincedome ./refresh.sh")
     
 
 client.run(MENZA_TOKEN)
