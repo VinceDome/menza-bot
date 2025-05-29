@@ -122,10 +122,13 @@ async def order(ctx, day=1, free=False):
                 except:
                     shortened = data[i].text
 
-                if data[i].text in ordered:
+                clean = Cutoff(data[i].text)
+                suggested_clean = [Cutoff(a.text) for a in suggested]
+
+                if clean in ordered:
                     autocolor.append([shortened, discord.ButtonStyle.red])
-                elif data[i] in suggested:
-                    autocolor.append([shortened, discord.ButtonStyle.blurple])
+                elif clean in suggested_clean:
+                    autocolor.append([shortened, discord.ButtonStyle.green])
                 else:
                     autocolor.append([shortened, discord.ButtonStyle.gray])
 

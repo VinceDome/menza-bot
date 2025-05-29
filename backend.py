@@ -9,6 +9,7 @@ from datetime import datetime
 from tokens.genai import GOOGLE_KEY
 
 import google.generativeai as genai
+from order import Cutoff
 
 genai.configure(api_key=GOOGLE_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
@@ -95,8 +96,14 @@ def SyncFood():
     hardcode = hardcode[0].split("Ft")
 
     for i in hardcode:
-      date = i[:10]
-      food = i.split("Ebéd")[1]
+      if i == "":
+        continue
+      try:
+        date = i[:10]
+        food_raw = i.split("Ebéd")[1]
+        food = Cutoff(food_raw)
+      except:
+        print("Error in parsing date or food")
 
       if not date=="" or not food=="":
         clean.append([date, food])

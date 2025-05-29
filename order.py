@@ -155,8 +155,7 @@ def Preference(data=None):
     if data is None:
         return savedPreference
     else:
-        data = [i.text for i in data]
-
+        data = [Cutoff(i.text) for i in data]
         
         for i in data:
             if i not in savedPreference:
@@ -178,14 +177,17 @@ def GetSuggested(menu):
     #4, 5 = soup
     #6, 7, 8 = main course
     #12 = street food
+    clean = Cutoff(menu[7].text)
 
     #if street food is in preference, it takes priority
-    if menu[7].text in preference:
+    if clean in preference:
         return menu[7]
     else:
         #add all preferred items to suggested
         for i in menu:
-            if i.text in preference:
+            clean = Cutoff(i.text)
+    
+            if clean in preference:
                 suggested.append(i)
         
         #sort the suggested items into soup and main course
@@ -203,6 +205,14 @@ def GetSuggested(menu):
         else:
             return (random.choice(soup), random.choice(main))
 
+def Cutoff(string):
+    #cut off the string at the first number or punctuation
+    clean = ""
+    for a in string:
+        if a in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", ","]:
+            break
+        clean += a
+    return clean
 # load in all foods and its appropriate data
 # make the user select one //// develop a ranking system
 # make user give ok command
