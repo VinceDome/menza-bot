@@ -94,16 +94,9 @@ def SyncFood():
 
     hardcode = hardcode[0].split("Ft")
 
-    for a in hardcode:
-      date = ""
-      food = ""
-      for i in range(len(a)):
-  
-        if i < 10:
-          date = date+a[i]
-          
-        else:
-          food = food+a[i]
+    for i in hardcode:
+      date = i[:10]
+      food = i.split("Ebéd")[1]
 
       if not date=="" or not food=="":
         clean.append([date, food])
