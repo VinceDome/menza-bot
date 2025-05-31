@@ -1,4 +1,4 @@
-import os.path, base64
+import os.path, base64, shutil
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -250,7 +250,11 @@ def AddUser(id, user):
     with open("data/users.txt", "w+", encoding="utf-8") as f:
       for i in users.items():
         print(i)
-        f.write("\n"+str(i[0])+"\t"+i[1])
+        f.write(str(i[0])+"\t"+i[1])
+
+      if i != list(users.items())[-1]:
+        f.write("\n")
+    
     
     #create their directory
     os.mkdir(f"data/{user}")
@@ -266,4 +270,21 @@ def AddUser(id, user):
   else:
     return False
 
+def RemoveUser(id):
+  users = GetUsers()
 
+  if id in users:
+    #remove their directory
+    shutil.rmtree(f"data/{users[id]}")
+    del users[id]
+
+    #update user file
+    with open("data/users.txt", "w+", encoding="utf-8") as f:
+      for i in users.items():
+        f.write(str(i[0])+"\t"+i[1])
+        if i != list(users.items())[-1]:
+          f.write("\n")  
+
+    return True
+  else:
+    return False

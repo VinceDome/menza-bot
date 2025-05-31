@@ -14,6 +14,8 @@ client = commands.Bot(command_prefix=".", case_insensitive = True, intents=disco
 client.remove_command("help")
 
 #create preference file
+if not os.path.exists("data"):
+    os.mkdir("data")
 with open("data/preference.txt", "a+") as f:
     pass
 
@@ -53,7 +55,14 @@ async def join(ctx, *, name):
         await ctx.send(f"""Succesfully recieving notifications for [{name}]""")
     else:
         await ctx.send(f"Already subscribed to [{GetUsers()[ctx.author.id]}]")
-   
+
+@client.command()
+async def leave(ctx):
+    if RemoveUser(ctx.author.id):
+        await ctx.send("Succesfully unsubscribed!")
+    else:
+        await ctx.send("Not subscribed to any notifications, use .join [name] to subscribe")
+
 @client.command()
 async def help(ctx):
     await ctx.send("Auto-forward the original lunch messages to here: vincespanol@gmail.com, then type:\n.join [name] <-- your official name which appears in the emails")
