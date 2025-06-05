@@ -84,6 +84,7 @@ async def shutdown(ctx):
             msg += "menzabot already stopped,  "
 
         msg += "shutting down...."
+        await ctx.send(msg)
         os.system("shutdown -h now")
     else:
         await ctx.send("can only shutdown on linux")
