@@ -105,7 +105,7 @@ def SyncFood():
       except:
         print("Error in parsing date or food")
 
-      if not date=="" or not food=="":
+      if not date in ["\n", "\t", "\r", "  "] and not food in ["\n", "\t", "\r", "  "]:
         clean.append([date, food])
     
     name = name.split("Étkező neve:")[1]
@@ -133,7 +133,8 @@ def SyncFood():
 
     if usable[0]:
       for i in range(usable[1], len(clean)):
-    
+          if clean[i][1] in ["Ebéd", "", " ", "\n"]:
+            continue
           response = model.generate_content(f"Csak az étel kategóriája és a neve legyen feltüntetve az alábbi szövegrészletből. Ne írj ki semmi mást. {clean[i][1]}")
           clean[i].append(response.text)
 
@@ -186,7 +187,7 @@ def GetFood(user, og=False, date=None):
     fR = f.read().rstrip()
     if not fR == "":
       for i in fR.split("%%%"):
-        if i != "":
+        if i not in ["", " ", "\n"]:
           bigdata.append(i.split("\t"))
       
 

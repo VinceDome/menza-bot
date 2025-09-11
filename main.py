@@ -115,7 +115,7 @@ async def order(ctx, day=1, free=False):
 
     data, session = GetMenu(session, day)
     
-    favs = [0, 1, 2, 3, 4, 7]
+    favs = [0, 2, 3, 4, 5, 6, 7]
     def ChangeView(change=None, mode=False):
         global buttons, view
         if change is None:
@@ -143,7 +143,7 @@ async def order(ctx, day=1, free=False):
 
             
             soup1 = Button(label=autocolor[0][0], style = autocolor[0][1], emoji = "🍲")
-            soup2 = Button(label=autocolor[1][0], style = autocolor[1][1], emoji = "🍲")
+            soup2 = Button(label=autocolor[1][0], style = autocolor[1][1], emoji = "🍝")
             main1 = Button(label=autocolor[2][0], style = autocolor[2][1], emoji = "🍝")
             main2 = Button(label=autocolor[3][0], style = autocolor[3][1], emoji = "🍝")
             main3 = Button(label=autocolor[4][0], style = autocolor[4][1], emoji = "🍝")

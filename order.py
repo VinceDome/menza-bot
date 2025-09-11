@@ -6,12 +6,12 @@ from datetime import datetime, timedelta
 
 def ExtractMenu(soup):
     data = [[] for i in range(5)]
-    current_day = -1
+    #shifted the days so we skip the first bar
+    current_day = -1-5
     
     
     for i in soup.find_all("div", class_=lambda x: x in ["mealplanner-menu-cell--head-date", "mealplanner-menu-cell-food"]):
         
-        print(i)
         if i["style"] == "order:0;":
             current_day += 1
             if current_day > 4:
@@ -108,6 +108,9 @@ def OrderFood(session, meals, free):
                 "date": inp["data-date"],
                 "price": price
             })
+        
+    #add the new menu item which is required to give it a price lmao
+    order_data.append({"menuid": "501", "info": "bc49D8IgEAbg/3Jza44aP+pMjSZ+LW4uCKSSkCPBMhn/uxztpDLdPXnfcC+QarCwgQabRY1tLQRUcLSUulPWQyL9mGB3zdDdbwnRtqag8l8p5X9TyhEjJe/HjTvjdolOl8/niDPMDybbS9bVcp0hlgOxgnN0vaN/HemeOiQaMvP52xBMHoErxkYOC3h/AA==", "mealid": "3", "quantity": 1, "date": "2025-09-11", "price": "MjMwMC4wMDAw"})
 
     order_data = {
         "data": json.dumps(order_data)
@@ -172,11 +175,10 @@ def Preference(data=None):
 def GetSuggested(menu):
     preference = Preference()            
     suggested = []
-    print(menu[7]["style"], "Ez a menü7")
     
-    #4, 5 = soup
-    #6, 7, 8 = main course
-    #12 = street food
+    #4 = soup
+    #5 = salad
+    #6, 7, 8, 9 = main course
     clean = Cutoff(menu[7].text)
 
     #if street food is in preference, it takes priority
@@ -196,7 +198,7 @@ def GetSuggested(menu):
         for i in suggested:
             if i["style"] in ["order:4;", "order:5;"]:
                 soup.append(i)
-            elif i["style"] in ["order:6;", "order:7;", "order:8;"]:
+            elif i["style"] in ["order:6;", "order:7;", "order:8;", "order:9;"]:
                 main.append(i)
         
         #if either soup or main is empty, return False because we will order only if it's sure
