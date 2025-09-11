@@ -77,7 +77,7 @@ class ProgressBar:
     def __init__(self, ctx):
         self.ctx = ctx
     
-    async def setup(self):
+    async def start(self):
         self.content = ["Starting..."]
         self.msg = await self.ctx.send(content="\n".join(self.content))
     
@@ -91,7 +91,7 @@ async def order(ctx, day=1, free=False):
     
 
     prog = ProgressBar(ctx)
-    await prog.setup()
+    await prog.start()
     
     
     if ctx.author.id not in (dev_id, bot_id):
