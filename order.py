@@ -19,8 +19,9 @@ def ExtractMenu(soup):
             continue
         elif i["style"] == "order:1;":
             continue
-
-        data[current_day].append(i)
+        
+        if current_day >= 0:
+            data[current_day].append(i)
         
     return data
 
