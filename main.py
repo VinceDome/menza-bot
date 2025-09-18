@@ -85,7 +85,7 @@ class ProgressBar:
         self.content.append(message)
         await self.msg.edit(content="\n".join(self.content), view=view)
 
-@client.command()
+@client.command(aliases=["o", "ord"])
 async def order(ctx, day=1, free=False):
     global session
     
