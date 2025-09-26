@@ -117,29 +117,12 @@ def OrderFood(session, meals, free):
         "data": json.dumps(order_data)
     }
 
-    """
-    order_data = {
-        "data": json.dumps([
-            {
-                "menuid": inp["data-menuid"],
-                "info": inp["data-info"],
-                "mealid": inp["data-mealid"],
-                "quantity": 1,
-                "date": inp["data-date"],
-                "price": zero_code#inp["data-f"]
-            }
-        ])
-    }
-    """
-
     print(order_data)
 
     response = session.post(selectURL, data=order_data)
     print(response)
     print(response.text)
-
-    #response = session.get(biaURL)
-
+    
     #feladás
     response = session.get(feladasURL)
     print(response.text)

@@ -219,7 +219,7 @@ async def order(ctx, day=1, free=False):
     await prog.update("Creating view...")
 
     ChangeView()
-    await prog.update("DONE!", view=view)
+    await prog.update(f"DONE!\n**{day.strftime('%Y.%m.%d - %A')}**", view=view)
 
 
 #remind.txt is the reminder daily at 10am
