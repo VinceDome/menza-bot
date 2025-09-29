@@ -40,7 +40,15 @@ async def lunch(ctx, og="ai", which=None):
     else:
         og = False
     
-    await ctx.send(GetFood(user=ctx.author.id, og=og, date=which))
+    try:
+        int(which)
+        which = datetime.now() + timedelta(days=int(which))
+        which = datetime.strftime(which, '%Y.%m.%d')
+        
+    except:
+        pass
+    
+    await ctx.send(f"**{which}**\n"+GetFood(user=ctx.author.id, og=og, date=which))
 
 @client.command()
 async def sync(ctx):
@@ -115,7 +123,7 @@ async def order(ctx, day=1, free=False):
 
     data, session = GetMenu(session, day)
     
-    favs = [0, 2, 3, 4, 5, 6, 7]
+    favs = [0, 2, 3, 4, 5, 8]
     def ChangeView(change=None, mode=False):
         global buttons, view
         if change is None:
@@ -142,21 +150,21 @@ async def order(ctx, day=1, free=False):
                     autocolor.append([shortened, discord.ButtonStyle.gray])
 
             
-            soup1 = Button(label=autocolor[0][0], style = autocolor[0][1], emoji = "🍲")
-            soup2 = Button(label=autocolor[1][0], style = autocolor[1][1], emoji = "🍝")
-            main1 = Button(label=autocolor[2][0], style = autocolor[2][1], emoji = "🍝")
-            main2 = Button(label=autocolor[3][0], style = autocolor[3][1], emoji = "🍝")
-            main3 = Button(label=autocolor[4][0], style = autocolor[4][1], emoji = "🍝")
+            soup = Button(label=autocolor[0][0], style = autocolor[0][1], emoji = "🍲")
+            main1 = Button(label=autocolor[1][0], style = autocolor[1][1], emoji = "🍝")
+            main2 = Button(label=autocolor[2][0], style = autocolor[2][1], emoji = "🍝")
+            main3 = Button(label=autocolor[3][0], style = autocolor[3][1], emoji = "🍝")
+            main4 = Button(label=autocolor[4][0], style = autocolor[4][1], emoji = "🍝")
             street = Button(label=autocolor[5][0], style = autocolor[5][1], emoji = "🍔")
             preference = Button(label="Add to preference", style = discord.ButtonStyle.green, emoji = "⭐")
             confirm = Button(label="Confirm", style = discord.ButtonStyle.green, emoji = "✅")
-            buttons = [soup1, soup2, main1, main2, main3, street, preference, confirm]
+            buttons = [soup, main1, main2, main3, main4, street, preference, confirm]
 
-        buttons[0].callback = soup1_call
-        buttons[1].callback = soup2_call
-        buttons[2].callback = main1_call
-        buttons[3].callback = main2_call
-        buttons[4].callback = main3_call
+        buttons[0].callback = soup_call
+        buttons[1].callback = main1_call
+        buttons[2].callback = main2_call
+        buttons[3].callback = main3_call
+        buttons[4].callback = main4_call
         buttons[5].callback = street_call
         buttons[6].callback = preference_call
         buttons[7].callback = confirm_call
@@ -191,15 +199,15 @@ async def order(ctx, day=1, free=False):
             ChangeView(change=index, mode="select")
         await interaction.response.edit_message(view=view)
 
-    async def soup1_call(interaction):
+    async def soup_call(interaction):
         await check(interaction, 0)
-    async def soup2_call(interaction):
-        await check(interaction, 1)
     async def main1_call(interaction):
-        await check(interaction, 2)
+        await check(interaction, 1)
     async def main2_call(interaction):
-        await check(interaction, 3)       
+        await check(interaction, 2)
     async def main3_call(interaction):
+        await check(interaction, 3)       
+    async def main4_call(interaction):
         await check(interaction, 4)
     async def street_call(interaction):
         await check(interaction, 5)
