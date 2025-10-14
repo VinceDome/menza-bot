@@ -29,8 +29,8 @@ async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=activity)
     refresher.start()
 
-@client.command()
-async def lunch(ctx, og="ai", which=None):
+@client.command(aliases=["l", "ebéd"])
+async def lunch(ctx, which=None, og="ai"):
     
     if GetFood(user=ctx.author.id) == "No food ordered for today" and which is None:
         SyncFood()
@@ -43,9 +43,11 @@ async def lunch(ctx, og="ai", which=None):
     try:
         int(which)
         which = datetime.now() + timedelta(days=int(which))
-        which = datetime.strftime(which, '%Y.%m.%d')
+        which = which.strftime('%Y.%m.%d')
         
     except:
+        if which is None:
+            which = datetime.now().strftime("%Y.%m.%d")
         pass
     
     await ctx.send(f"**{which}**\n"+GetFood(user=ctx.author.id, og=og, date=which))
