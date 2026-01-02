@@ -135,12 +135,15 @@ def SyncFood():
       for i in range(usable[1], len(clean)):
           if clean[i][1] in ["Ebéd", "", " ", "\n"]:
             continue
-          response = model.generate_content(f"Csak az étel kategóriája és a neve legyen feltüntetve az alábbi szövegrészletből. Ne írj ki semmi mást. {clean[i][1]}")
-          clean[i].append(response.text)
+          
+          #response = model.generate_content(f"Csak az étel kategóriája és a neve legyen feltüntetve az alábbi szövegrészletből. Ne írj ki semmi mást. {clean[i][1]}")
+          #clean[i].append(response.text)
+          #print(response.text)
 
+          clean[i].append(clean[i][1])
           clean[i].append(name)
 
-          print(response.text)
+          
           
           bigdata.append(clean[i])
           
