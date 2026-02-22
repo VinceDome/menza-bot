@@ -249,10 +249,13 @@ async def refresher():
         with open(f"data/{user}/remind.txt", "r", encoding="utf-8") as f:
             history = f.read().rstrip()
         
-        if datetime.strptime(history, '%Y.%m.%d').date() < datetime.now().date():
+        #if the latest reminder was sent before today, and today is not a weekend
+        if datetime.strptime(history, '%Y.%m.%d').date() < datetime.now().date() and not datetime.now().isoweekday() in set((6, 7)):
+
             if datetime.now().hour >= 10:
                 if GetFood(user=id) == "No food ordered for today":
                     SyncFood()
+
                 await msg_dm.send(GetFood(user=id))
                 
                 with open(f"data/{user}/remind.txt", "w", encoding="utf-8") as f:
