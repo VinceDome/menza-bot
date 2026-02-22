@@ -114,45 +114,57 @@ async def help(ctx):
         return None
     await ctx.send("***Commands***\n!start\n!stop\n!crash\n!restart --- *(restarts systemmd)*\n!shutdown --- (*the computer*)\n!sync --- (*fetch new code*)\n!help")
 
-@client.command(aliases=["do", "f", "c", ".", ""])
+@client.command(aliases=["r", "!", ".", ""])
 async def remote(ctx):
     global proc
     if ctx.author.id != dev_id:
         return None
 
     if proc is None:
-        startStop = Button(label="Start", style = discord.ButtonStyle.green, emoji = "▶")
+        startStopButton = Button(label="Start", style = discord.ButtonStyle.green, emoji = "▶")
     else:
-        startStop = Button(label="Stop", style = discord.ButtonStyle.red, emoji = "⏸")
+        startStopButton = Button(label="Stop", style = discord.ButtonStyle.red, emoji = "⏸")
 
-    restart = Button(label="Restart", style = discord.ButtonStyle.blurple, emoji = "🔄")
-    shutdown = Button(label="Shutdown", style = discord.ButtonStyle.red, emoji = "🛑")
-    sync = Button(label="Sync", style = discord.ButtonStyle.blurple, emoji = "🔁")
+    restartButton = Button(label="Restart", style = discord.ButtonStyle.blurple, emoji = "🔄")
+    shutdownButton = Button(label="Shutdown", style = discord.ButtonStyle.red, emoji = "🛑")
+    syncButton = Button(label="Sync", style = discord.ButtonStyle.blurple, emoji = "🔁")
 
     async def startStop_callback(interaction):
-        if proc is None:
-            await start(ctx)
-        else:
-            await stop(ctx)
+        try:
+            if proc is None:
+                await start(ctx)
+            else:
+                await stop(ctx)
+        except:
+            await ctx.send("something went wrong")
+            pass
+
+        await msg.delete()
+        await remote(ctx)
+        
+        await interaction.response.defer()
     async def restart_callback(interaction):
         await restart(ctx)
+        await interaction.response.defer()
     async def shutdown_callback(interaction):
         await shutdown(ctx)
+        await interaction.response.defer()
     async def sync_callback(interaction):
         await sync(ctx)
+        await interaction.response.defer()
 
-    startStop.callback = startStop_callback
-    restart.callback = restart_callback
-    shutdown.callback = shutdown_callback
-    sync.callback = sync_callback
+    startStopButton.callback = startStop_callback
+    restartButton.callback = restart_callback
+    shutdownButton.callback = shutdown_callback
+    syncButton.callback = sync_callback
 
     view = View()
-    view.add_item(startStop)
-    view.add_item(restart)
-    view.add_item(sync)
-    view.add_item(shutdown)
+    view.add_item(startStopButton)
+    view.add_item(restartButton)
+    view.add_item(syncButton)
+    view.add_item(shutdownButton)
 
-    await ctx.send("Command remote xd", view=view)
+    msg = await ctx.send("Command remote xd", view=view)
 
     
 
