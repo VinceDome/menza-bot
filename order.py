@@ -113,7 +113,7 @@ def OrderFood(session, meals, free):
                 "price": price
             })
     
-    if not fresh:
+    if not fresh and not free:
         #add the new menu item which is required to give it a price lmao
         order_data.append({"menuid": "501", "info": "bc49D8IgEAbg/3Jza44aP+pMjSZ+LW4uCKSSkCPBMhn/uxztpDLdPXnfcC+QarCwgQabRY1tLQRUcLSUulPWQyL9mGB3zdDdbwnRtqag8l8p5X9TyhEjJe/HjTvjdolOl8/niDPMDybbS9bVcp0hlgOxgnN0vaN/HemeOiQaMvP52xBMHoErxkYOC3h/AA==", "mealid": "3", "quantity": 1, "date": inp["data-date"], "price": "MjMwMC4wMDAw"})
 
